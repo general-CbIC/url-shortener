@@ -1,16 +1,16 @@
-#URL Shortener
+# URL Shortener
 
 Simple url shortener written on ruby using [em-hiredis](https://github.com/mloughran/em-hiredis) and [sinatra](https://github.com/sinatra/sinatra).
 Needs to [redis](https://redis.io) be installed.
 
-####Run with:
+#### Run with:
 
 ```
 $ bundle
 $ rake
 ```
 
-####Usage example:
+#### Usage example:
 
 ```
 $ curl --header "Content-Type: application/json" \
@@ -19,13 +19,13 @@ $ curl --header "Content-Type: application/json" \
   http://localhost:1234/
 ```
 
-####Answer:
+#### Answer:
 
 ```
 {"url":"http://localhost:1234/1X8jx44s"}
 ```
 
-####Trying link:
+#### Trying link:
 ```
 $ curl -i http://localhost:1234/1X8jx44s
 
