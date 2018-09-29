@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 require 'em-hiredis'
-require 'sinatra/base'
+require 'sinatra/async'
 require 'thin'
 require 'json'
 
@@ -11,6 +11,8 @@ def random_string(n)
 end
 
 class URLShortener < Sinatra::Base
+  register Sinatra::Async
+
   def redis
     @redis ||= EM::Hiredis.connect
   end
@@ -22,24 +24,23 @@ class URLShortener < Sinatra::Base
     JSON.generate(url: "http://localhost:1234/#{short_id}")
   end
 
-  get '*' do
-    stream :keep_open do |out|
-      s = params['splat'][0]
-      short_id = s.slice(1, s.length)
+  aget '*' do
+    s = params['splat'][0]
+    short_id = s.slice(1, s.length)
 
-      redis.get(short_id).callback do |long_url|
-        if long_url.nil?
-          out << 'not_found'
-          out.close
-        else
-          # status 301
-          # response.headers['Location'] = long_url
-          # header "Location: #{long_url}"
-          out.close
-          redirect long_url
-        end
-        # out.close
+    request = redis.get(short_id)
+
+    request.callback do |long_url|
+      if long_url.nil?
+        body 'not_found'
+      else
+        status 301
+        headers['Location'] = long_url
       end
+    end
+
+    request.errback do |e|
+      body "#{e}"
     end
   end
 end
