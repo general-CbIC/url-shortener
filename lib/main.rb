@@ -6,13 +6,13 @@ module Main
   require 'thin'
   require 'json'
 
-  def random_string(n)
-    symbols = [('a'..'z'), ('A'..'Z'), ('0'..'9')].map(&:to_a).flatten
-    (0...n).map { symbols[rand(symbols.length)] }.join
-  end
-
   class URLShortener < Sinatra::Base
     register Sinatra::Async
+
+    def random_string(n)
+      symbols = [('a'..'z'), ('A'..'Z'), ('0'..'9')].map(&:to_a).flatten
+      (0...n).map { symbols[rand(symbols.length)] }.join
+    end
 
     def redis
       @redis ||= EM::Hiredis.connect
@@ -37,6 +37,7 @@ module Main
         else
           status 301
           headers['Location'] = long_url
+          body nil
         end
       end
     end
@@ -50,11 +51,11 @@ module Main
     end
 
     Rack::Server.start(
-        app: dispatch,
-        server: 'thin',
-        Host: 'localhost',
-        Port: 1234,
-        signals: false
+      app: dispatch,
+      server: 'thin',
+      Host: 'localhost',
+      Port: 1234,
+      signals: false
     )
   end
 end
